@@ -1,0 +1,114 @@
+@extends('layouts.admin.app')
+
+@section('title', '| Tambah Bobot')
+
+@section('content')
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-100 dark:border-gray-700">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Tambah Bobot Baru</h1>
+        <a href="{{ route('admin.weights.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 cursor-pointer">
+            Kembali
+        </a>
+    </div>
+
+    @if ($errors->any())
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
+            <p class="font-bold">Ada kesalahan dalam pengisian form:</p>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.weights.store') }}" method="POST" class="space-y-6">
+        @csrf
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="field-spacer">
+                <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">KATEGORI</label>
+                <select name="category_id" id="category_id" style="min-height: 48px;" class="w-full py-3 pl-4 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                    <option value="">Pilih Kategori</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="field-spacer">
+                <label for="subcategory_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SUBKATEGORI (OPSIONAL)</label>
+                <select name="subcategory_id" id="subcategory_id" style="min-height: 48px;" class="w-full py-3 pl-4 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                    <option value="">Pilih Subkategori</option>
+                </select>
+            </div>
+
+            <div class="field-spacer">
+                <label for="weight_value" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">BOBOT (1-100)</label>
+                <input type="number" name="weight_value" id="weight_value" min="1" max="100" value="{{ old('weight_value') }}" style="min-height: 48px; padding-top: 12px; padding-bottom: 12px; padding-left: 8px;" class="w-full py-3 pl-4 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+                Simpan
+            </button>
+        </div>
+    </form>
+</div>
+
+@push('scripts')
+<script>
+    // Data kategori dari PHP
+    const categoriesData = @json($categoriesJson);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('category_id');
+        const subcategorySelect = document.getElementById('subcategory_id');
+        
+        // Debug: Tampilkan data kategori di console
+        console.log('Data Kategori dari PHP:', categoriesData);
+        
+        // Fungsi untuk memperbarui dropdown subkategori
+        function updateSubcategories() {
+            const categoryId = parseInt(categorySelect.value);
+            console.log('Kategori yang dipilih ID:', categoryId);
+            
+            // Reset dropdown subkategori
+            subcategorySelect.innerHTML = '<option value="">Pilih Subkategori</option>';
+            
+            if (categoryId) {
+                // Ambil data subkategori dari kategori yang dipilih
+                const selectedCategory = categoriesData.find(c => c.id === categoryId);
+                console.log('Kategori yang dipilih:', selectedCategory);
+                
+                if (selectedCategory && selectedCategory.subcategories && selectedCategory.subcategories.length > 0) {
+                    console.log('Subkategori yang ditemukan:', selectedCategory.subcategories);
+                    // Tambahkan opsi subkategori
+                    selectedCategory.subcategories.forEach(subcategory => {
+                        console.log('Menambahkan subkategori:', subcategory);
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.textContent = subcategory.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                } else {
+                    console.log('Tidak ada subkategori untuk kategori ini');
+                }
+            }
+        }
+        
+        // Tambahkan event listener untuk perubahan kategori
+        categorySelect.addEventListener('change', updateSubcategories);
+        
+        // Debug: Tampilkan event listener sudah terpasang
+        console.log('Event listener terpasang pada select kategori');
+        
+        // Jalankan updateSubcategories jika ada kategori yang sudah dipilih
+        if (categorySelect.value) {
+            updateSubcategories();
+        }
+    });
+</script>
+@endpush
+@endsection 

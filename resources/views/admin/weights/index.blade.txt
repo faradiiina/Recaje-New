@@ -1,0 +1,88 @@
+@extends('layouts.admin.app')
+
+@section('title', '| Pembobotan')
+
+@section('content')
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-100 dark:border-gray-700">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Pembobotan Kriteria</h1>
+        <a href="{{ route('admin.weights.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer">
+            Tambah Bobot
+        </a>
+    </div>
+
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded" role="alert">
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 overflow-hidden rounded-lg">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr class="h-12">
+                    <th scope="col" class="px-6 py-3 rounded-tl-lg">
+                        KATEGORI
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        SUBKATEGORI
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        BOBOT
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        BOBOT NORMALISASI
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-right rounded-tr-lg">
+                        AKSI
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($weights as $weight)
+                    <tr class="h-16 bg-gray-700 text-white border-b border-gray-600 transition-colors" style="cursor: pointer;" onmouseover="this.style.backgroundColor='#2B3544'" onmouseout="this.style.backgroundColor='#1F2937'">
+                        <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap {{ $loop->last ? 'rounded-bl-lg' : '' }}">
+                            {{ $weight->category->name }}
+                        </th>
+                        <td class="px-6 py-4" style="color: rgba(255, 255, 255, 0.5);">
+                            {{ $weight->subcategory ? $weight->subcategory->name : '-' }}
+                        </td>
+                        <td class="px-6 py-4" style="color: rgba(255, 255, 255, 0.5);">
+                            {{ $weight->weight_value }}
+                        </td>
+                        <td class="px-6 py-4" style="color: rgba(255, 255, 255, 0.5);">
+                            {{ number_format($weight->normalized_weight, 4) }}
+                        </td>
+                        <td class="px-6 py-4 text-right {{ $loop->last ? 'rounded-br-lg' : '' }}">
+                            <div class="flex items-center justify-end space-x-4">
+                                <a href="{{ route('admin.weights.edit', $weight) }}" class="text-xs font-semibold uppercase hover:underline" style="color: rgba(0, 109, 255);">
+                                    Edit
+                                </a>
+                                <form action="{{ route('admin.weights.destroy', $weight) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus bobot ini?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs font-semibold uppercase hover:underline cursor-pointer" style="color: rgba(0, 109, 255);">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr class="h-16 bg-gray-700 text-white" style="cursor: pointer;" onmouseover="this.style.backgroundColor='#2B3544'" onmouseout="this.style.backgroundColor='#1F2937'">
+                        <td colspan="5" class="px-6 py-4 text-center rounded-b-lg">
+                            Tidak ada bobot yang ditemukan.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+@endsection 
